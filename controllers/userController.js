@@ -13,7 +13,10 @@ module.exports = {
     // Get one
     async getUser(req, res) {
         try {
-            const user = await User.find({ _id: req.params.userId }).select('-__v'); // not sure what the select is for
+            const user = await User.find({ _id: req.params.userId })
+                .select('-__v')  // not sure what this is for
+                .populate('thoughts')
+                .populate('friends');
             if (!user) {
                 return res.status(404).json({ message: 'No user with that ID' });
             }
@@ -62,5 +65,40 @@ module.exports = {
         } catch (err) {
             res.status(500).json(err);
         }
+    },
+    // Add friend
+    async addFriend(req, res) {
+        try {
+            const user = await User.findOneAndUpdate(
+                {_id: req.params.userId},
+                {$addToSet: { friends: req.body } },
+                { runValidators: true, new: true }
+            );
+            if (!user) {
+                return res.status(404).json({ message: 'No user with that ID' });
+            }
+
+            res.json(user);
+        } catch (err) {
+            res.status(500).json(err);
+        }
+    },
+    // Remove friends
+    async removeFriend(req, res) {
+        try {
+            const user = await User.findOneAndUpdate(
+                { _id: req.params.userId },
+                { $pull: { friends: { friendId: req.params.friendId } } },
+                { runValidators: true, new: true }
+            );
+            if (!user) {
+                return res.status(404).json({ message: 'No user with that ID' });
+            }
+
+            res.json(user);
+        } catch (err) {
+            res.status(500).json(err);
+        }
     }
 };
+
