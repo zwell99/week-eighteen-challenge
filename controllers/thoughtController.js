@@ -33,6 +33,25 @@ module.exports = {
             res.status(500).json(err);
         }
     },
+    // Update one
+    async updateThought(req, res) {
+        try {
+            const thought = await Thought.findOneAndUpdate(
+                { _id: req.params.thoughtId },
+                { $set: { thoughtText: req.body.thoughtText } },
+                { $set: { username: req.body.username } },
+                { $set: { emmail: req.body.email } },
+                { runValidators: true, new: true }
+            );
+            if (!thought) {
+                return res.status(404).json({ message: 'No thought with that ID' });
+            }
+
+            res.json(thought);
+        } catch (err) {
+            res.status(500).json(err);
+        }
+    },
     // Delete one
     async deleteThought(req, res) {
         try {
